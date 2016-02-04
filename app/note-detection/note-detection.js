@@ -15,6 +15,5 @@ angular.module('pianoPitchDetector.note-detection', [
 
     .controller('NoteDetectionController', ['noteDetectorService',
       function(noteDetectorService) {
-        noteDetectorService.doStuff();
       }
     ]);
