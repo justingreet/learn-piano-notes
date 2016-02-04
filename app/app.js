@@ -4,7 +4,8 @@
 angular.module('pianoPitchDetector', [
   'ngRoute',
   'pianoPitchDetector.note-detection'
-]).
-config(['$routeProvider', function($routeProvider) {
-  $routeProvider.otherwise({redirectTo: '/note-detection'});
-}]);
+])
+
+    .config(['$routeProvider', function($routeProvider) {
+      $routeProvider.otherwise({redirectTo: '/note-detection'});
+    }]);
