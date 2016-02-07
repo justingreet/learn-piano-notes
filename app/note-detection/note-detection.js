@@ -15,5 +15,15 @@ angular.module('pianoPitchDetector.note-detection', [
 
     .controller('NoteDetectionController', ['noteDetectorService',
       function(noteDetectorService) {
+        this.keyNum = -1;
+        var self = this;
+
+        self.detectKeyNum = function() {
+          noteDetectorService.detectKeyNum();
+        };
+
+        noteDetectorService.registerCallback(function(keyNum) {
+          document.getElementById('stuff').innerHTML = keyNum;
+        })
       }
     ]);

@@ -2,8 +2,10 @@
 
 angular.module('pianoPitchDetector.note-detector', [])
 
-    // TODO: Add babel so that you can use modules
-    .service('noteDetectorService', ['$rootScope', function($rootScope) {
+    // TODO: Write a test suite that compares these results to actual
+    // recorded piano
+    // TODO: Add babel (or use typescript) so that you can use modules
+    .service('noteDetectorService', [function() {
 
       /**
        * @type {number} The number of data points we capture from the mic.
@@ -12,17 +14,19 @@ angular.module('pianoPitchDetector.note-detector', [])
        * frequency 27.5) at a sample rate of 44,100. The buffer should
        * capture 18% of a second.
        */
-      var BUF_LEN = 8192;
+      this.BUF_LEN = 8192;
 
       /** @type {Float32Array} The array that stores the mic data points. */
-      this.buffer = new Float32Array(BUF_LEN);
+      this.buffer = new Float32Array(this.BUF_LEN);
       this.audioContext = new AudioContext();
 
       /** @type {number} The sample rate of the audio context. */
-      var SAMPLE_RATE = this.audioContext.sampleRate;
-      debugger;
+      this.SAMPLE_RATE = this.audioContext.sampleRate;
+
+      this.NUM_KEYS = 88;
 
       this.analyser;
+      this.callback;
 
       var self = this;
 
@@ -42,7 +46,7 @@ angular.module('pianoPitchDetector.note-detector', [])
         // Take the output of the stream and pass it to the analyser as input.
         mediaStreamSource.connect(self.analyser);
 
-        detectPitch();
+        self.detectKeyNum();
       };
 
       var error = function() {
@@ -76,7 +80,77 @@ angular.module('pianoPitchDetector.note-detector', [])
        *    repetitions of the note. That means we want to test by jumping
        *    over (1/F)/(B/SR) = SR/(F*B) percent of B.
        */
-      var detectPitch = function() {
+      this.detectKeyNum = function() {
+        if (!self.callback) {
+          return;
+        }
+
+        self.updateBufferWithTimeSeries();
+
+        var bestLikelihood = 0;
+        var bestKey = -1;
+        for (var keyNum = 1; keyNum <= self.NUM_KEYS; keyNum++) {
+          var curLikelihood =
+              self.calculateLikelihoodOfFrequency(keyNum, self.buffer);
+          if (curLikelihood > bestLikelihood) {
+            bestLikelihood = curLikelihood;
+            bestKey = keyNum;
+          }
+        }
+        self.callback(bestKey);
+
+        if (!window.requestAnimationFrame)
+          window.requestAnimationFrame = window.webkitRequestAnimationFrame;
+        window.requestAnimationFrame(self.detectKeyNum);
+      };
+
+
+      this.updateBufferWithTimeSeries = function() {
         self.analyser.getFloatTimeDomainData(self.buffer);
+      };
+
+
+      this.getFrequencyFromKeyNum = function(keyNum) {
+        var power = (keyNum - 49)/12;
+        var freq = Math.pow(2, power)*440;
+        return freq;
+      };
+
+
+      /**
+       * We need to figure out how many iterations of a note in the buffer
+       * to test on. In a later, more accurate version, we want to segment
+       * the buffer when we have disagreement to say something like: the
+       * first half is key 34, the second half is key 67. Because we want to
+       * be quick, we choose key 67.
+       *
+       * For now I'll just assume the whole buffer contains a single note
+       * and do as many comparisons as I can.
+       */
+      self.calculateLikelihoodOfFrequency = function(keyNum, values) {
+        var freq = self.getFrequencyFromKeyNum(keyNum);
+
+        // Unit of (# samples)/ (iteration of note)
+        var samplesPerPeriod = Math.floor(self.SAMPLE_RATE/freq);
+        //var numJumps = Math.floor(BUF_LEN/jumpSize);
+
+        // Now, we assume we have a particular note that has a fixed
+        // period. Compare segments of the wave with length of that period
+        // to each other, and if they're similar then we made a good guess.
+        var maxVals = 0;
+        var differences = 0;
+        for (var j = 0; j < samplesPerPeriod; j++) {
+          var basePoint = values[j];
+          var comparisonPoint = values[samplesPerPeriod + j];
+
+          differences = Math.abs(basePoint - comparisonPoint);
+          maxVals += Math.max(basePoint, comparisonPoint);
+        }
+
+        return 1 - (differences/maxVals);
+      };
+
+      this.registerCallback = function(callback) {
+        this.callback = callback;
       }
     }]);
