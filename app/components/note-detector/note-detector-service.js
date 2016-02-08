@@ -128,6 +128,7 @@ noteDetectorModule.service('noteDetectorService', ['utilService',
    * For now I'll just assume the whole buffer contains a single note
    * and do as many comparisons as I can.
    */
+  // TODO: Understand and improve the algorithm.
   self.calculateLikelihoodOfFrequency = function(keyNum, values) {
     var freq = utilService.getFrequencyFromKeyNum(keyNum);
 
@@ -140,7 +141,7 @@ noteDetectorModule.service('noteDetectorService', ['utilService',
     // to each other, and if they're similar then we made a good guess.
     var differences = 0;
 
-/*    if (keyNum <= 27) {
+/*    if (keyNum >= 85) {
       var sign = document.createElement('h2');
       sign.innerHTML = keyNum.toString();
       document.body.appendChild(sign);
