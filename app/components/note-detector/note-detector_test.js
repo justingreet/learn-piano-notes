@@ -2,11 +2,14 @@
 
 describe('Pitch detector', function() {
   var noteDetector;
+  var perfectNote;
 
+  // TODO: Fix these tests to get them to run.
   beforeEach(module('pianoPitchDetector.note-detector'));
 
-  beforeEach(inject(function(noteDetectorService) {
+  beforeEach(inject(function(noteDetectorService, perfectNoteService) {
     noteDetector = noteDetectorService;
+    perfectNote = perfectNoteService;
   }));
 
 
@@ -42,7 +45,27 @@ describe('Pitch detector', function() {
     expect(likelihood).toBeCloseTo(.985);
   });
 
-  describe('FANCY TESTS', function() {
-    // TODO: Write an actual test suite against real files.
+  describe('the note detector should correctly identify the note', function() {
+    describe('of an ideal waveform', function() {
+
+      var detectedNote;
+
+      beforeEach(function() {
+        noteDetector.registerCallback(function(bestNote) {
+          detectedNote = bestNote;
+        });
+      });
+
+      for (var i = 1; i <= 88; i++) {
+        it('of note ' + i, function() {
+          // Given a perfect waveform
+          var waveform = perfectNote.getPerfectWaveform(i);
+
+          noteDetector.detectKeyNum(waveform);
+
+          expect(detectedNote).toEqual(i);
+        });
+      }
+    });
   });
 });

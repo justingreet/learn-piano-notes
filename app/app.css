@@ -28,3 +28,8 @@
   content: "";
   padding: 0;
 }
+
+canvas {
+  display: block;
+  margin-bottom: 10px;
+}
