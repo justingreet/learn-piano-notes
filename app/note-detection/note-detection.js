@@ -55,7 +55,6 @@ noteDetectionModule.controller('NoteDetectionController', [
     };
 
     this.detectNote = function() {
-      console.log('in detect note on controller');
       self.analyser.getFloatTimeDomainData(self.buffer);
       var detectedNote = noteDetectorService.detectKeyNum(self.buffer);
 

@@ -16,7 +16,6 @@ noteDetectorModule.service('noteDetectorService', ['utilService',
 
 
   this.detectKeyNum = function(buffer) {
-    console.log('in detect key num');
     if (!self.SAMPLE_RATE) {
       throw "No sample rate has been set.";
     }
