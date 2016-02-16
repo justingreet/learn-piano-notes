@@ -1,5 +1,6 @@
 'use strict';
 
+console.log('app module');
 // Declare app level module which depends on views, and components
 angular.module('pianoPitchDetector', [
   'ngRoute',

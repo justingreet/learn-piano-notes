@@ -2,12 +2,8 @@
 
 var noteDetectorModule = angular.module('pianoPitchDetector.note-detector');
 
-// TODO: Write a test suite that compares these results to actual
-// recorded piano
-// TODO: Add babel (or use typescript) so that you can use modules
 noteDetectorModule.service('noteDetectorService', ['utilService',
-  'drawWaveformService',
-  function(utilService, drawWaveformService) {
+  function(utilService) {
 
   /**
    * @type {number} The number of data points we capture from the mic.
@@ -48,7 +44,7 @@ noteDetectorModule.service('noteDetectorService', ['utilService',
     // Take the output of the stream and pass it to the analyser as input.
     mediaStreamSource.connect(self.analyser);
 
-    //self.detectKeyNum();
+    self.detectKeyNum();
   };
 
   var error = function() {
@@ -87,7 +83,8 @@ noteDetectorModule.service('noteDetectorService', ['utilService',
       return;
     }
 
-    if (opt_buffer) {
+    if (opt_buffer && (typeof opt_buffer === Float32Array)) {
+      console.log('passed a buffer');
       self.buffer = opt_buffer;
     } else {
       self.updateBufferWithTimeSeries();
@@ -98,7 +95,6 @@ noteDetectorModule.service('noteDetectorService', ['utilService',
     for (var keyNum = 1; keyNum <= self.NUM_KEYS; keyNum++) {
       var curLikelihood =
           self.calculateLikelihoodOfFrequency(keyNum, self.buffer);
-
       // We do = because we want the highest frequency that matches.
       if (curLikelihood >= bestLikelihood) {
         bestLikelihood = curLikelihood;
@@ -107,9 +103,9 @@ noteDetectorModule.service('noteDetectorService', ['utilService',
     }
     self.callback(bestKey);
 
-/*    if (!window.requestAnimationFrame)
+    if (!window.requestAnimationFrame)
       window.requestAnimationFrame = window.webkitRequestAnimationFrame;
-    window.requestAnimationFrame(self.detectKeyNum);*/
+    window.requestAnimationFrame(self.detectKeyNum);
   };
 
 

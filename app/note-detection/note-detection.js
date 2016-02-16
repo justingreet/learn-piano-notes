@@ -2,8 +2,8 @@
 
 angular.module('pianoPitchDetector.note-detection', [
   'ngRoute',
-  'pianoPitchDetector.note-detector',
-  'pianoPitchDetector.waveform-helpers'
+  'pianoPitchDetector.waveform-helpers',
+  'pianoPitchDetector.note-detector'
 ])
 
     .config(['$routeProvider', function($routeProvider) {
@@ -15,16 +15,15 @@ angular.module('pianoPitchDetector.note-detection', [
     }])
 
     .controller('NoteDetectionController', ['noteDetectorService',
-      'drawWaveformService', 'perfectNoteService',
-      function(noteDetectorService, drawWaveformService, perfectNoteService) {
+      function(noteDetectorService) {
         this.keyNum = -1;
-        var self = this;
+        //var self = this;
 
-        self.detectKeyNum = function() {
+/*        self.detectKeyNum = function() {
           var keyNum = parseInt(document.getElementById("numStuff").value);
           noteDetectorService.detectKeyNum(
               perfectNoteService.getPerfectWaveform(keyNum));
-        };
+        };*/
 
         noteDetectorService.registerCallback(function(keyNum) {
           document.getElementById('stuff').innerHTML = keyNum;

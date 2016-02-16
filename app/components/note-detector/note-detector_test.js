@@ -4,7 +4,6 @@ describe('Pitch detector', function() {
   var noteDetector;
   var perfectNote;
 
-  // TODO: Fix these tests to get them to run.
   beforeEach(module('pianoPitchDetector.note-detector'));
 
   beforeEach(inject(function(noteDetectorService, perfectNoteService) {
@@ -32,22 +31,8 @@ describe('Pitch detector', function() {
     expect(noteDetector.getFrequencyFromKeyNum(70)).toBeCloseTo(1479.98);
   });
 
-  it('should correctly calculate likelihood of frequency.', function() {
-    // Given a known (and easy to work with) set of data
-    noteDetector.getFrequencyFromKeyNum = function() {return 3};
-    noteDetector.SAMPLE_RATE = 6;
-    // Let's assume we guessed the right frequency
-    var values = [.42,.97,.41,.95,.39,.96];
-
-    // When we calculate likelihood
-    var likelihood = noteDetector.calculateLikelihoodOfFrequency(4, values);
-
-    expect(likelihood).toBeCloseTo(.985);
-  });
-
   describe('the note detector should correctly identify the note', function() {
     describe('of an ideal waveform', function() {
-
       var detectedNote;
 
       beforeEach(function() {

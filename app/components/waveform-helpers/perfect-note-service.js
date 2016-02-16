@@ -1,3 +1,4 @@
+console.log('perfect note');
 var helperModule = angular.module('pianoPitchDetector.waveform-helpers');
 
 helperModule.service('perfectNoteService', ['utilService',
