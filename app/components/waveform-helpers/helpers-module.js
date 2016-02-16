@@ -1,4 +1,3 @@
-console.log('helpers module');
 angular.module('pianoPitchDetector.waveform-helpers', [
   'pianoPitchDetector.util'
 ])

@@ -1,32 +1,67 @@
 'use strict';
 
-angular.module('pianoPitchDetector.note-detection', [
-  'ngRoute',
-  'pianoPitchDetector.waveform-helpers',
-  'pianoPitchDetector.note-detector'
-])
+var noteDetectionModule = angular.module('pianoPitchDetector.note-detection');
+noteDetectionModule.controller('NoteDetectionController', [
+  'noteDetectorService', function(noteDetectorService) {
+    var self = this;
 
-    .config(['$routeProvider', function($routeProvider) {
-      $routeProvider.when('/note-detection', {
-        templateUrl: 'note-detection/note-detection.html',
-        controller: 'NoteDetectionController',
-        controllerAs: 'ctrl'
-      });
-    }])
+    this.init = function() {
+      /**
+       * @type {number} The number of data points we capture from the mic.
+       * This is the smallest power of 2 that allows us to capture at least
+       * 3 instances (it's actually 5) of the lowest piano note (which has
+       * frequency 27.5) at a sample rate of 44,100. The buffer should
+       * capture 18% of a second.
+       */
+      self.BUF_LEN = 8192;
 
-    .controller('NoteDetectionController', ['noteDetectorService',
-      function(noteDetectorService) {
-        this.keyNum = -1;
-        //var self = this;
+      /** @type {Float32Array} The array that stores the mic data points. */
+      self.buffer = new Float32Array(this.BUF_LEN);
+      self.audioContext = new AudioContext();
 
-/*        self.detectKeyNum = function() {
-          var keyNum = parseInt(document.getElementById("numStuff").value);
-          noteDetectorService.detectKeyNum(
-              perfectNoteService.getPerfectWaveform(keyNum));
-        };*/
+      /** @type {number} The sample rate of the audio context. */
+      self.SAMPLE_RATE = self.audioContext.sampleRate;
+      noteDetectorService.setSampleRate(self.SAMPLE_RATE);
 
-        noteDetectorService.registerCallback(function(keyNum) {
-          document.getElementById('stuff').innerHTML = keyNum;
-        });
-      }
-    ]);
+
+      /**
+       * Create an Audio Node for the input from the user's mic, an Audio Node
+       * to analyze that data, and hook them together.
+       * @param stream The media stream from the user's mic
+       */
+      var initDetection = function(stream) {
+        // Create an AudioNode from the stream.
+        var mediaStreamSource =
+            self.audioContext.createMediaStreamSource(stream);
+
+        // Create an analyser node.
+        self.analyser = self.audioContext.createAnalyser();
+        self.analyser.fftSize = 2048;
+        // Take the output of the stream and pass it to the analyser as input.
+        mediaStreamSource.connect(self.analyser);
+
+        window.setInterval(self.detectNote, 1000);
+      };
+
+      var error = function() {
+        console.log('ERROR! ERROR!');
+      };
+
+      navigator.getUserMedia =
+          navigator.getUserMedia ||
+          navigator.webkitGetUserMedia ||
+          navigator.mozGetUserMedia;
+      navigator.getUserMedia(({audio: true}), initDetection, error);
+    };
+
+    this.detectNote = function() {
+      console.log('in detect note on controller');
+      self.analyser.getFloatTimeDomainData(self.buffer);
+      var detectedNote = noteDetectorService.detectKeyNum(self.buffer);
+
+      document.getElementById('stuff').innerHTML = detectedNote;
+    };
+
+    this.init();
+  }
+]);
