@@ -14,11 +14,20 @@ noteDetectorModule.service('noteDetectorService', ['utilService',
      * returned from detectKeyNum.
      */
     this.detectedKeyQueue = [];
+
     this.NUM_MATCHES_REQUIRED = 3;
 
 
     var self = this;
 
+
+    /**
+     * Determines what key number should be displayed to the user. It helps
+     * smooth out results to prevent the jumpiness that seems to exist in
+     * all the other pitch detectors.
+     * @param {number} detectedKey
+     * @returns {number}
+     */
     this.determineKeyToReturn = function(detectedKey) {
       // We only need to be able to go far enough back to find the last run
       // of matching keys of length NUM_MATCHES_REQUIRED.

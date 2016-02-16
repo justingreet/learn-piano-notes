@@ -39,7 +39,7 @@ noteDetectionModule.controller('NoteDetectionController', [
         // Take the output of the stream and pass it to the analyser as input.
         mediaStreamSource.connect(self.analyser);
 
-        window.setInterval(self.detectNote, 150);
+        window.setInterval(self.detectNote, 94);
       };
 
       var error = function() {
