@@ -96,6 +96,10 @@ noteDetectorModule.service('noteDetectorService', ['utilService',
      * and do as many comparisons as I can.
      */
     self.calculateLikelihoodOfFrequency = function(keyNum, values) {
+      //TODO: Attempt to be more accurate with octaves. There is an issue
+      // that sometimes, for example, says that the high C that I pressed is
+      // in fact a lower one.
+
       var freq = utilService.getFrequencyFromKeyNum(keyNum);
 
       // Unit of (# samples)/ (iteration of note)
