@@ -9,11 +9,10 @@ noteDetectionModule.controller('NoteDetectionController', [
       /**
        * @type {number} The number of data points we capture from the mic.
        * This is the smallest power of 2 that allows us to capture at least
-       * 3 instances (it's actually 5) of the lowest piano note (which has
-       * frequency 27.5) at a sample rate of 44,100. The buffer should
-       * capture 18% of a second.
+       * 2 instances of the lowest piano note (which has frequency 27.5) at a
+       * sample rate of 44,100. The buffer should capture 9% of a second.
        */
-      self.BUF_LEN = 8192;
+      self.BUF_LEN = 4096;
 
       /** @type {Float32Array} The array that stores the mic data points. */
       self.buffer = new Float32Array(this.BUF_LEN);
@@ -40,7 +39,7 @@ noteDetectionModule.controller('NoteDetectionController', [
         // Take the output of the stream and pass it to the analyser as input.
         mediaStreamSource.connect(self.analyser);
 
-        window.setInterval(self.detectNote, 1000);
+        window.setInterval(self.detectNote, 150);
       };
 
       var error = function() {
