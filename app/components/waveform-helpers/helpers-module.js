@@ -1,6 +1,6 @@
 angular.module('pianoPitchDetector.waveform-helpers', [
-  'pianoPitchDetector.util'
-])
+      'pianoPitchDetector.util'
+    ])
 
     .service('drawWaveformService', [function() {
       var waveforms = [];

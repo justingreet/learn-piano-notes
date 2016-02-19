@@ -2,7 +2,6 @@ var helperModule = angular.module('pianoPitchDetector.waveform-helpers');
 
 helperModule.service('perfectNoteService', ['utilService',
   function(utilService) {
-    //Hey there
   this.getPerfectWaveform = function(keyNum) {
     var freq = utilService.getFrequencyFromKeyNum(keyNum);
     var samplesPerPeriod = utilService.getSamplesPerPeriod(freq, 44100);
