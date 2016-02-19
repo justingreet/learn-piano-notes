@@ -1,0 +1,1 @@
+{"version":3,"sources":["note-detector-module.js"],"names":[],"mappings":";;AAAA,QAAQ,MAAR,CAAe,kCAAf,EAAmD,CAChD,yBADgD,CAAnD","file":"note-detector-module-compiled.js","sourcesContent":["angular.module('pianoPitchDetector.note-detector', [\n   'pianoPitchDetector.util'\n]);\n"]}
