@@ -1,0 +1,1 @@
+{"version":3,"sources":["note-trainer-module.js"],"names":[],"mappings":"AAAA;;AAEA,IAAI,oBAAoB,QAAQ,MAAR,CAAe,iCAAf,EAAkD,EAAlD,CAApB","file":"note-trainer-module-compiled.js","sourcesContent":["'use strict';\n\nvar noteTrainerModule = angular.module('pianoPitchDetector.note-trainer', [\n]);"]}

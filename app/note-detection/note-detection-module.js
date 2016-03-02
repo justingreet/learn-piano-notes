@@ -3,7 +3,8 @@
 var noteDetectionModule = angular.module('pianoPitchDetector.note-detection', [
   'ngRoute',
   'pianoPitchDetector.waveform-helpers',
-  'pianoPitchDetector.note-detector'
+  'pianoPitchDetector.note-detector',
+  'pianoPitchDetector.note-trainer'
 ]);
 
 noteDetectionModule.config(['$routeProvider', function($routeProvider) {

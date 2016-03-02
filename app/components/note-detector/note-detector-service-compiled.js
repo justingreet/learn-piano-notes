@@ -101,14 +101,6 @@ noteDetectorModule.service('noteDetectorService', ['utilService', function (util
 
     var differences = 0;
 
-    /*    if (keyNum >= 85) {
-     var sign = document.createElement('h2');
-     sign.innerHTML = keyNum.toString();
-     document.body.appendChild(sign);
-     drawWaveformService.addWaveform(values.slice(0));
-     drawWaveformService.addWaveform(values.slice(samplesPerPeriod));
-     }*/
-
     for (var j = samplesPerPeriod; j < values.length; j++) {
       var basePoint = values[j - samplesPerPeriod];
       var comparisonPoint = values[j];
