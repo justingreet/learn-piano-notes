@@ -68,10 +68,9 @@ var NoteDetectionController = function () {
   }, {
     key: 'detectNote',
     value: function detectNote() {
-      this.analyser.getFloatTimeDomainData(this.buffer);
+      /*this.analyser.getFloatTimeDomainData(this.buffer);
       var detectedNote = this.noteDetectorService.detectKeyNum(this.buffer);
-
-      document.getElementById('stuff').innerHTML = detectedNote;
+       document.getElementById('stuff').innerHTML = detectedNote;*/
     }
   }]);
 
