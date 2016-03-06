@@ -5,6 +5,13 @@ var _createClass = function () { function defineProperties(target, props) { for 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 noteTrainerModule.directive('noteTrainer', function () {
+  var SPACE_BETWEEN_LINES = 50;
+
+  var STAFF_HEIGHT = 200;
+  var STAFF_WIDTH = 300;
+  var NUM_STAFFS_PER_LINE = 3;
+  var NUM_LINES = 2;
+
   var Staff = function () {
     function Staff(top, left, noteNum, ctx) {
       _classCallCheck(this, Staff);
@@ -30,9 +37,9 @@ noteTrainerModule.directive('noteTrainer', function () {
         var ctx = this.ctx;
         ctx.beginPath();
         ctx.moveTo(this.left, this.top);
-        ctx.lineTo(this.left + Staff.WIDTH, this.top);
-        ctx.lineTo(this.left + Staff.WIDTH, this.top + Staff.HEIGHT);
-        ctx.lineTo(this.left, this.top + Staff.HEIGHT);
+        ctx.lineTo(this.left + STAFF_WIDTH, this.top);
+        ctx.lineTo(this.left + STAFF_WIDTH, this.top + STAFF_HEIGHT);
+        ctx.lineTo(this.left, this.top + STAFF_HEIGHT);
         ctx.lineTo(this.left, this.top);
         ctx.stroke();
       }
@@ -40,9 +47,6 @@ noteTrainerModule.directive('noteTrainer', function () {
 
     return Staff;
   }();
-
-  Staff.HEIGHT = 200;
-  Staff.WIDTH = 300;
 
   var Line = function () {
     function Line(top, ctx) {
@@ -54,10 +58,9 @@ noteTrainerModule.directive('noteTrainer', function () {
       this.ctx = ctx;
 
       this.staffs = [];
-      var NUM_STAFFS = 3;
-      for (var i = 0; i < NUM_STAFFS; i++) {
+      for (var i = 0; i < NUM_STAFFS_PER_LINE; i++) {
         var noteNum = Math.random() * (maxNote - minNote) + minNote;
-        this.staffs.push(new Staff(top, i * Staff.WIDTH, noteNum, this.ctx));
+        this.staffs.push(new Staff(top, i * STAFF_WIDTH, noteNum, this.ctx));
       }
     }
 
@@ -88,16 +91,15 @@ noteTrainerModule.directive('noteTrainer', function () {
 
       _classCallCheck(this, NoteTrainerController);
 
-      this.canvasWidth = 3 * Staff.WIDTH;
-      this.canvasHeight = 3 * Staff.HEIGHT;
+      this.canvasWidth = NUM_STAFFS_PER_LINE * STAFF_WIDTH;
+      this.canvasHeight = NUM_LINES * STAFF_HEIGHT + (NUM_LINES - 1) * SPACE_BETWEEN_LINES;
 
       var c = document.getElementById("sheetMusic");
       this.ctx = c.getContext("2d");
 
       this.lines = [];
-      var NUM_LINES = 2;
       for (var i = 0; i < NUM_LINES; i++) {
-        this.lines.push(new Line(i * Staff.HEIGHT, this.ctx));
+        this.lines.push(new Line(i * STAFF_HEIGHT + i * SPACE_BETWEEN_LINES, this.ctx));
       }
 
       //this.draw();
