@@ -6,6 +6,9 @@ class NoteDetectionController {
   constructor(noteDetectorService) {
     this.noteDetectorService = noteDetectorService;
 
+    this.isPlaying = false;
+    this.detectionInterval;
+
     /**
      * @type {number} The number of data points we capture from the mic.
      * This is the smallest power of 2 that allows us to capture at least
@@ -34,6 +37,16 @@ class NoteDetectionController {
         stream => this.initDetection(stream), error);
   }
 
+  pause() {
+    this.isPlaying = false;
+    //clearInterval(this.detectionInterval);
+  }
+
+  start() {
+    this.isPlaying = true;
+    this.detectionInterval = window.setInterval(() => this.detectNote(), 94);
+  }
+
 
   /**
    * Create an Audio Node for the input from the user's mic, an Audio Node
@@ -50,16 +63,14 @@ class NoteDetectionController {
     this.analyser.fftSize = 2048;
     // Take the output of the stream and pass it to the analyser as input.
     mediaStreamSource.connect(this.analyser);
-
-    window.setInterval(() => this.detectNote(), 94);
   }
 
 
   detectNote() {
-    /*this.analyser.getFloatTimeDomainData(this.buffer);
-    var detectedNote = this.noteDetectorService.detectKeyNum(this.buffer);
-
-    document.getElementById('stuff').innerHTML = detectedNote;*/
+    this.analyser.getFloatTimeDomainData(this.buffer);
+    if (this.isPlaying) {
+      this.noteDetectorService.detectKeyNum(this.buffer);
+    }
   }
 }
 

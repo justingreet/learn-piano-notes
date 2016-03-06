@@ -17,6 +17,8 @@ noteDetectorModule.service('noteDetectorService', ['utilService',
 
     this.NUM_MATCHES_REQUIRED = 3;
 
+    // Functions that want to know when we detected a note.
+    this.listeners = [];
 
     var self = this;
 
@@ -59,6 +61,10 @@ noteDetectorModule.service('noteDetectorService', ['utilService',
       return detectedKey;
     };
 
+    this.registerListener = function(listener) {
+      this.listeners.push(listener);
+    };
+
     this.setSampleRate = function(sampleRate) {
       self.SAMPLE_RATE = sampleRate;
     };
@@ -80,6 +86,12 @@ noteDetectorModule.service('noteDetectorService', ['utilService',
           bestKey = keyNum;
         }
       }
+
+      var keyToReturn = self.determineKeyToReturn(bestKey);
+
+      this.listeners.forEach(listener => {
+        listener(keyToReturn);
+      });
 
       return self.determineKeyToReturn(bestKey);
     };

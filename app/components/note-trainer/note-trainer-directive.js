@@ -119,13 +119,25 @@ noteTrainerModule.directive('noteTrainer', function () {
   }
 
   class NoteTrainerController {
-    constructor() {
+    constructor($scope, noteDetectorService) {
+
+      $scope.$watch(() => {
+        return $scope.isPlaying;
+      }, newVal => {
+        if (newVal) {
+          this.start();
+        } else {
+          this.pause();
+        }
+      });
       this.canvasWidth = NUM_STAFFS_PER_LINE*STAFF_WIDTH;
       this.canvasHeight = NUM_LINES*STAFF_HEIGHT +
           (NUM_LINES - 1)*SPACE_BETWEEN_LINES;
 
       var c = document.getElementById("sheetMusic");
       this.ctx = c.getContext("2d");
+
+      this.isPlaying = false;
 
       this.lines = [];
       for (let i = 0; i < NUM_LINES; i++) {
@@ -137,15 +149,23 @@ noteTrainerModule.directive('noteTrainer', function () {
       this.progressLineX = 0;
       this.progressLineTime = 0;
 
-      this.start();
+      noteDetectorService.registerListener(this.noteDetected);
+
+      window.setTimeout(() => this.draw(), 10);
+    }
+
+    noteDetected(detectedNote) {
+      // TODO: Actually do something when a note is detected.
     }
 
     start() {
+      this.isPlaying = true;
       this.refreshInterval =
           window.setInterval(() => this.update(), REFRESH_TIME);
     }
 
     pause() {
+      this.isPlaying = false;
       clearInterval(this.refreshInterval);
     }
 
@@ -208,6 +228,7 @@ noteTrainerModule.directive('noteTrainer', function () {
   return {
     restrict: 'E',
     scope: {
+      isPlaying: '='
     },
     controller: NoteTrainerController,
     controllerAs: 'ctrl',

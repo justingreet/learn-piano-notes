@@ -1,2 +1,3 @@
-<note-trainer></note-trainer>
-<!--<p id="stuff">-1</p>-->
+<note-trainer is-playing="ctrl.isPlaying"></note-trainer>
+<button ng-if="ctrl.isPlaying" ng-click="ctrl.pause()">Pause</button>
+<button ng-if="!ctrl.isPlaying" ng-click="ctrl.start()">Start</button>

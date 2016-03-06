@@ -142,14 +142,27 @@ noteTrainerModule.directive('noteTrainer', function () {
   }();
 
   var NoteTrainerController = function () {
-    function NoteTrainerController() {
+    function NoteTrainerController($scope, noteDetectorService) {
+      var _this = this;
+
       _classCallCheck(this, NoteTrainerController);
 
+      $scope.$watch(function () {
+        return $scope.isPlaying;
+      }, function (newVal) {
+        if (newVal) {
+          _this.start();
+        } else {
+          _this.pause();
+        }
+      });
       this.canvasWidth = NUM_STAFFS_PER_LINE * STAFF_WIDTH;
       this.canvasHeight = NUM_LINES * STAFF_HEIGHT + (NUM_LINES - 1) * SPACE_BETWEEN_LINES;
 
       var c = document.getElementById("sheetMusic");
       this.ctx = c.getContext("2d");
+
+      this.isPlaying = false;
 
       this.lines = [];
       for (var i = 0; i < NUM_LINES; i++) {
@@ -160,21 +173,32 @@ noteTrainerModule.directive('noteTrainer', function () {
       this.progressLineX = 0;
       this.progressLineTime = 0;
 
-      this.start();
+      noteDetectorService.registerListener(this.noteDetected);
+
+      window.setTimeout(function () {
+        return _this.draw();
+      }, 10);
     }
 
     _createClass(NoteTrainerController, [{
+      key: "noteDetected",
+      value: function noteDetected(detectedNote) {
+        // TODO: Actually do something when a note is detected.
+      }
+    }, {
       key: "start",
       value: function start() {
-        var _this = this;
+        var _this2 = this;
 
+        this.isPlaying = true;
         this.refreshInterval = window.setInterval(function () {
-          return _this.update();
+          return _this2.update();
         }, REFRESH_TIME);
       }
     }, {
       key: "pause",
       value: function pause() {
+        this.isPlaying = false;
         clearInterval(this.refreshInterval);
       }
     }, {
@@ -216,7 +240,7 @@ noteTrainerModule.directive('noteTrainer', function () {
     }, {
       key: "draw",
       value: function draw() {
-        var _this2 = this;
+        var _this3 = this;
 
         var ctx = this.ctx;
 
@@ -225,7 +249,7 @@ noteTrainerModule.directive('noteTrainer', function () {
 
         // Draw the sheet music.
         this.lines.forEach(function (line) {
-          return line.draw(_this2.progressLineX);
+          return line.draw(_this3.progressLineX);
         });
 
         // Draw the progress line.
@@ -244,7 +268,9 @@ noteTrainerModule.directive('noteTrainer', function () {
 
   return {
     restrict: 'E',
-    scope: {},
+    scope: {
+      isPlaying: '='
+    },
     controller: NoteTrainerController,
     controllerAs: 'ctrl',
     templateUrl: 'components/note-trainer/note-trainer.html'

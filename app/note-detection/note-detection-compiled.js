@@ -14,6 +14,9 @@ var NoteDetectionController = function () {
 
     this.noteDetectorService = noteDetectorService;
 
+    this.isPlaying = false;
+    this.detectionInterval;
+
     /**
      * @type {number} The number of data points we capture from the mic.
      * This is the smallest power of 2 that allows us to capture at least
@@ -40,18 +43,32 @@ var NoteDetectionController = function () {
     }, error);
   }
 
-  /**
-   * Create an Audio Node for the input from the user's mic, an Audio Node
-   * to analyze that data, and hook them together.
-   * @param stream The media stream from the user's mic
-   */
-
-
   _createClass(NoteDetectionController, [{
-    key: 'initDetection',
-    value: function initDetection(stream) {
+    key: 'pause',
+    value: function pause() {
+      this.isPlaying = false;
+      //clearInterval(this.detectionInterval);
+    }
+  }, {
+    key: 'start',
+    value: function start() {
       var _this2 = this;
 
+      this.isPlaying = true;
+      this.detectionInterval = window.setInterval(function () {
+        return _this2.detectNote();
+      }, 94);
+    }
+
+    /**
+     * Create an Audio Node for the input from the user's mic, an Audio Node
+     * to analyze that data, and hook them together.
+     * @param stream The media stream from the user's mic
+     */
+
+  }, {
+    key: 'initDetection',
+    value: function initDetection(stream) {
       // Create an AudioNode from the stream.
       var mediaStreamSource = this.audioContext.createMediaStreamSource(stream);
 
@@ -60,17 +77,14 @@ var NoteDetectionController = function () {
       this.analyser.fftSize = 2048;
       // Take the output of the stream and pass it to the analyser as input.
       mediaStreamSource.connect(this.analyser);
-
-      window.setInterval(function () {
-        return _this2.detectNote();
-      }, 94);
     }
   }, {
     key: 'detectNote',
     value: function detectNote() {
-      /*this.analyser.getFloatTimeDomainData(this.buffer);
-      var detectedNote = this.noteDetectorService.detectKeyNum(this.buffer);
-       document.getElementById('stuff').innerHTML = detectedNote;*/
+      this.analyser.getFloatTimeDomainData(this.buffer);
+      if (this.isPlaying) {
+        this.noteDetectorService.detectKeyNum(this.buffer);
+      }
     }
   }]);
 
