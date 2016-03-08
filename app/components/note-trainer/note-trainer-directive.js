@@ -8,7 +8,7 @@ noteTrainerModule.directive('noteTrainer', function () {
   const NUM_STAFFS_PER_LINE = 3;
   const NUM_LINES = 3;
 
-  var timePerStaff = 2000;
+  var timePerStaff = 5000;
 
   class Staff {
     constructor(top, left, noteNum, ctx) {
@@ -18,10 +18,14 @@ noteTrainerModule.directive('noteTrainer', function () {
       this.ctx = ctx;
 
       this.isActive = false;
+
+      this.hasCorrectNoteBeenPlayed = false;
     }
 
     noteDetected(detectedNote) {
-
+      if (detectedNote === this.noteNum) {
+        this.hasCorrectNoteBeenPlayed = true;
+      }
     }
 
     enter() {
@@ -38,6 +42,11 @@ noteTrainerModule.directive('noteTrainer', function () {
 
     draw() {
       let ctx = this.ctx;
+      let oldStrokeStyle = ctx.strokeStyle;
+
+      if (this.hasCorrectNoteBeenPlayed) {
+        ctx.strokeStyle = '#FFFF00';
+      }
 
       // Draw the box.
       ctx.beginPath();
@@ -57,13 +66,15 @@ noteTrainerModule.directive('noteTrainer', function () {
       ctx.fillText(this.noteNum,
           this.left + (STAFF_WIDTH*.5),
           this.top+(STAFF_HEIGHT*.5));
+
+      ctx.strokeStyle = oldStrokeStyle;
     }
   }
 
   class Line {
     constructor(top, ctx, opt_left = 0) {
-      const maxNote = 50;
-      const minNote = 20;
+      const maxNote = 40;
+      const minNote = 42;
 
       this.top = top;
       this.ctx = ctx;
@@ -93,8 +104,10 @@ noteTrainerModule.directive('noteTrainer', function () {
       this.staffs[this.staffs.length - 1].exit();
     }
 
-    noteDetected() {
-
+    noteDetected(detectedNote) {
+      if (this.activeStaffIndex >=0) {
+        this.staffs[this.activeStaffIndex].noteDetected(detectedNote);
+      }
     }
 
     updateTop(newTop) {
@@ -121,6 +134,7 @@ noteTrainerModule.directive('noteTrainer', function () {
   class NoteTrainerController {
     constructor($scope, noteDetectorService) {
 
+      // Listen for when the user toggles play/pause.
       $scope.$watch(() => {
         return $scope.isPlaying;
       }, newVal => {
@@ -130,6 +144,7 @@ noteTrainerModule.directive('noteTrainer', function () {
           this.pause();
         }
       });
+
       this.canvasWidth = NUM_STAFFS_PER_LINE*STAFF_WIDTH;
       this.canvasHeight = NUM_LINES*STAFF_HEIGHT +
           (NUM_LINES - 1)*SPACE_BETWEEN_LINES;
@@ -149,13 +164,13 @@ noteTrainerModule.directive('noteTrainer', function () {
       this.progressLineX = 0;
       this.progressLineTime = 0;
 
-      noteDetectorService.registerListener(this.noteDetected);
+      noteDetectorService.registerListener(this.noteDetected.bind(this));
 
       window.setTimeout(() => this.draw(), 10);
     }
 
     noteDetected(detectedNote) {
-      // TODO: Actually do something when a note is detected.
+      this.lines[0].noteDetected(detectedNote);
     }
 
     start() {

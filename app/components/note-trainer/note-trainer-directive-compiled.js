@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -14,7 +14,7 @@ noteTrainerModule.directive('noteTrainer', function () {
   var NUM_STAFFS_PER_LINE = 3;
   var NUM_LINES = 3;
 
-  var timePerStaff = 2000;
+  var timePerStaff = 5000;
 
   var Staff = function () {
     function Staff(top, left, noteNum, ctx) {
@@ -26,30 +26,41 @@ noteTrainerModule.directive('noteTrainer', function () {
       this.ctx = ctx;
 
       this.isActive = false;
+
+      this.hasCorrectNoteBeenPlayed = false;
     }
 
     _createClass(Staff, [{
-      key: "noteDetected",
-      value: function noteDetected(detectedNote) {}
+      key: 'noteDetected',
+      value: function noteDetected(detectedNote) {
+        if (detectedNote === this.noteNum) {
+          this.hasCorrectNoteBeenPlayed = true;
+        }
+      }
     }, {
-      key: "enter",
+      key: 'enter',
       value: function enter() {
         this.isActive = true;
       }
     }, {
-      key: "exit",
+      key: 'exit',
       value: function exit() {
         this.isActive = false;
       }
     }, {
-      key: "updateTop",
+      key: 'updateTop',
       value: function updateTop(newTop) {
         this.top = newTop;
       }
     }, {
-      key: "draw",
+      key: 'draw',
       value: function draw() {
         var ctx = this.ctx;
+        var oldStrokeStyle = ctx.strokeStyle;
+
+        if (this.hasCorrectNoteBeenPlayed) {
+          ctx.strokeStyle = '#FFFF00';
+        }
 
         // Draw the box.
         ctx.beginPath();
@@ -65,6 +76,8 @@ noteTrainerModule.directive('noteTrainer', function () {
 
         // Draw some text.
         ctx.fillText(this.noteNum, this.left + STAFF_WIDTH * .5, this.top + STAFF_HEIGHT * .5);
+
+        ctx.strokeStyle = oldStrokeStyle;
       }
     }]);
 
@@ -77,8 +90,8 @@ noteTrainerModule.directive('noteTrainer', function () {
 
       _classCallCheck(this, Line);
 
-      var maxNote = 50;
-      var minNote = 20;
+      var maxNote = 40;
+      var minNote = 42;
 
       this.top = top;
       this.ctx = ctx;
@@ -97,23 +110,27 @@ noteTrainerModule.directive('noteTrainer', function () {
     }
 
     _createClass(Line, [{
-      key: "enter",
+      key: 'enter',
       value: function enter() {
         this.isActive = true;
         this.activeStaffIndex = 0;
         this.staffs[0].enter();
       }
     }, {
-      key: "exit",
+      key: 'exit',
       value: function exit() {
         this.isActive = false;
         this.staffs[this.staffs.length - 1].exit();
       }
     }, {
-      key: "noteDetected",
-      value: function noteDetected() {}
+      key: 'noteDetected',
+      value: function noteDetected(detectedNote) {
+        if (this.activeStaffIndex >= 0) {
+          this.staffs[this.activeStaffIndex].noteDetected(detectedNote);
+        }
+      }
     }, {
-      key: "updateTop",
+      key: 'updateTop',
       value: function updateTop(newTop) {
         this.staffs.forEach(function (staff) {
           staff.updateTop(newTop);
@@ -122,7 +139,7 @@ noteTrainerModule.directive('noteTrainer', function () {
         this.top = newTop;
       }
     }, {
-      key: "draw",
+      key: 'draw',
       value: function draw(progressLineX) {
         if (this.isActive) {
           var newActiveStaffIndex = Math.floor(progressLineX / STAFF_WIDTH);
@@ -147,6 +164,7 @@ noteTrainerModule.directive('noteTrainer', function () {
 
       _classCallCheck(this, NoteTrainerController);
 
+      // Listen for when the user toggles play/pause.
       $scope.$watch(function () {
         return $scope.isPlaying;
       }, function (newVal) {
@@ -156,6 +174,7 @@ noteTrainerModule.directive('noteTrainer', function () {
           _this.pause();
         }
       });
+
       this.canvasWidth = NUM_STAFFS_PER_LINE * STAFF_WIDTH;
       this.canvasHeight = NUM_LINES * STAFF_HEIGHT + (NUM_LINES - 1) * SPACE_BETWEEN_LINES;
 
@@ -173,7 +192,7 @@ noteTrainerModule.directive('noteTrainer', function () {
       this.progressLineX = 0;
       this.progressLineTime = 0;
 
-      noteDetectorService.registerListener(this.noteDetected);
+      noteDetectorService.registerListener(this.noteDetected.bind(this));
 
       window.setTimeout(function () {
         return _this.draw();
@@ -181,12 +200,12 @@ noteTrainerModule.directive('noteTrainer', function () {
     }
 
     _createClass(NoteTrainerController, [{
-      key: "noteDetected",
+      key: 'noteDetected',
       value: function noteDetected(detectedNote) {
-        // TODO: Actually do something when a note is detected.
+        this.lines[0].noteDetected(detectedNote);
       }
     }, {
-      key: "start",
+      key: 'start',
       value: function start() {
         var _this2 = this;
 
@@ -196,13 +215,13 @@ noteTrainerModule.directive('noteTrainer', function () {
         }, REFRESH_TIME);
       }
     }, {
-      key: "pause",
+      key: 'pause',
       value: function pause() {
         this.isPlaying = false;
         clearInterval(this.refreshInterval);
       }
     }, {
-      key: "update",
+      key: 'update',
       value: function update() {
         this.draw();
 
@@ -238,7 +257,7 @@ noteTrainerModule.directive('noteTrainer', function () {
         this.progressLineX = percentageOfLineCovered * curLine.width;
       }
     }, {
-      key: "draw",
+      key: 'draw',
       value: function draw() {
         var _this3 = this;
 

@@ -85,9 +85,11 @@ noteDetectorModule.service('noteDetectorService', ['utilService', function (util
 
     var keyToReturn = self.determineKeyToReturn(bestKey);
 
-    this.listeners.forEach(function (listener) {
-      listener(keyToReturn);
-    });
+    if (keyToReturn >= 10 && keyToReturn <= 75) {
+      this.listeners.forEach(function (listener) {
+        listener(keyToReturn);
+      });
+    }
 
     return self.determineKeyToReturn(bestKey);
   };
