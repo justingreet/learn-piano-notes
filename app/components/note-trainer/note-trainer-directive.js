@@ -42,39 +42,81 @@ noteTrainerModule.directive('noteTrainer', function () {
 
     draw() {
       let ctx = this.ctx;
-      let oldStrokeStyle = ctx.strokeStyle;
 
-      if (this.hasCorrectNoteBeenPlayed) {
-        ctx.strokeStyle = '#FFFF00';
-      }
+      // Store the old values.
+      let oldStyle = ctx.strokeStyle;
+      let oldWidth = ctx.lineWidth;
 
-      // Draw the box.
+      // Set the new values.
+      const LINE_THICKNESS = 1;
+      ctx.lineWidth = LINE_THICKNESS;
+      ctx.strokeStyle = 'black';
+
+      // Begin the new path for the staff.
       ctx.beginPath();
       ctx.moveTo(this.left, this.top);
 
-      ctx.lineWidth = (this.isActive) ?
-          5:
-          2;
+      let self = this;
 
-      ctx.lineTo(this.left + STAFF_WIDTH, this.top);
+      // There are 4 empty spots in the treble clef, 2 empty slots in
+      // between the clefs, and 4 empty slots in the bass clef.
+      let numNoteSlots = 10;
+
+      // Need to leave space for the 5 lines of treble clef, 1 line for
+      // middle c, and 5 lines of bass clef.
+      let heightOfNote = (STAFF_HEIGHT - (11 * LINE_THICKNESS)) / numNoteSlots;
+
+      let drawFiveLines = function(top) {
+        for (let i = 0; i < 5; i++) {
+          let curTop = top + i*(LINE_THICKNESS + heightOfNote);
+          ctx.moveTo(self.left, curTop);
+          ctx.lineTo(self.left + STAFF_WIDTH, curTop);
+        }
+
+        return (4 * heightOfNote) + (5 * LINE_THICKNESS);
+      };
+
+      // Draw treble clef.
+      let trebleClefHeight = drawFiveLines(this.top);
+      // The vertical space needed for the 3 notes that sit between clefs.
+      let heightBetweenClefs = (2 * heightOfNote) + LINE_THICKNESS;
+
+      // Draw bass clef. Leave space above it for treble clef and notes in
+      // between clefs.
+      drawFiveLines(this.top + trebleClefHeight + heightBetweenClefs);
+
+      // Draw the vertical line separating staffs.
+      ctx.moveTo(this.left + STAFF_WIDTH, this.top);
       ctx.lineTo(this.left + STAFF_WIDTH, this.top + STAFF_HEIGHT);
-      ctx.lineTo(this.left, this.top + STAFF_HEIGHT);
-      ctx.lineTo(this.left, this.top);
-      ctx.stroke();
+
+/*      // Draw a circle on the staff to represent the note to be played.
+      let noteXCenter = this.left + 20;
+      let noteRadius = heightOfNote;
+      // 57 is highest note in treble cleff.
+      let noteYCenter = ;*/
 
       // Draw some text.
       ctx.fillText(this.noteNum,
           this.left + (STAFF_WIDTH*.5),
           this.top+(STAFF_HEIGHT*.5));
 
-      ctx.strokeStyle = oldStrokeStyle;
+      // Actually draw the lines.
+      ctx.stroke();
+
+      // Finish off the staff's path.
+      ctx.moveTo(this.left, this.top);
+      ctx.closePath();
+
+      // Restore the old values.
+      ctx.strokeStle = oldStyle;
+      ctx.lineWidth = oldWidth;
     }
   }
 
   class Line {
     constructor(top, ctx, opt_left = 0) {
-      const maxNote = 40;
-      const minNote = 42;
+      const maxNote = 57;
+      const minNote = 23;
 
       this.top = top;
       this.ctx = ctx;
@@ -145,9 +187,9 @@ noteTrainerModule.directive('noteTrainer', function () {
         }
       });
 
-      this.canvasWidth = NUM_STAFFS_PER_LINE*STAFF_WIDTH;
-      this.canvasHeight = NUM_LINES*STAFF_HEIGHT +
-          (NUM_LINES - 1)*SPACE_BETWEEN_LINES;
+      this.canvasWidth = 10 + NUM_STAFFS_PER_LINE * STAFF_WIDTH;
+      this.canvasHeight = 10 + (NUM_LINES * STAFF_HEIGHT) +
+          (NUM_LINES - 1) * SPACE_BETWEEN_LINES;
 
       var c = document.getElementById("sheetMusic");
       this.ctx = c.getContext("2d");

@@ -11,4 +11,7 @@ utilModule.service('utilService', function() {
   this.getSamplesPerPeriod = function(freq, sampleRate) {
     return Math.round(sampleRate/freq);
   };
+
+
+  this.keyNumToNoteName
 });
