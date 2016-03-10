@@ -14,7 +14,9 @@ noteTrainerModule.directive('noteTrainer', function () {
   var NUM_STAFFS_PER_LINE = 3;
   var NUM_LINES = 3;
 
-  var timePerStaff = 5000;
+  var util;
+
+  var timePerStaff = 2500;
 
   var Staff = function () {
     function Staff(top, left, noteNum, ctx) {
@@ -62,9 +64,9 @@ noteTrainerModule.directive('noteTrainer', function () {
         var oldWidth = ctx.lineWidth;
 
         // Set the new values.
-        var LINE_THICKNESS = 1;
+        var LINE_THICKNESS = this.isActive ? 4 : 1;
         ctx.lineWidth = LINE_THICKNESS;
-        ctx.strokeStyle = 'black';
+        ctx.strokeStyle = this.hasCorrectNoteBeenPlayed ? 'green' : 'black';
 
         // Begin the new path for the staff.
         ctx.beginPath();
@@ -103,14 +105,60 @@ noteTrainerModule.directive('noteTrainer', function () {
         ctx.moveTo(this.left + STAFF_WIDTH, this.top);
         ctx.lineTo(this.left + STAFF_WIDTH, this.top + STAFF_HEIGHT);
 
-        /*      // Draw a circle on the staff to represent the note to be played.
-              let noteXCenter = this.left + 20;
-              let noteRadius = heightOfNote;
-              // 57 is highest note in treble cleff.
-              let noteYCenter = ;*/
+        var calcNumStepsAboveFloor = function calcNumStepsAboveFloor(noteNum) {
+          // Even though it's incorrect, a step in this context is the number
+          // of space above the bottom of the bass clef a note is located. So,
+          // note 23 has a step of 0, note 25 has a step of 1, note 27 has a
+          // step of 2, note 40 has a step of 10.
+          var numStepsPerOctave = 6;
+          var newZero = noteNum - 23;
+          var numOctavesFromZero = Math.floor(newZero / 12);
 
-        // Draw some text.
-        ctx.fillText(this.noteNum, this.left + STAFF_WIDTH * .5, this.top + STAFF_HEIGHT * .5);
+          var numKeysFromStartOfOctave = newZero % 12;
+
+          var numStepsAboveStartOfOctave = 0;
+          switch (numKeysFromStartOfOctave) {
+            case 0:
+              numStepsAboveStartOfOctave = 0;
+              break;
+            case 2:
+              numStepsAboveStartOfOctave = 1;
+              break;
+            case 4:
+              numStepsAboveStartOfOctave = 2;
+              break;
+            case 5:
+              numStepsAboveStartOfOctave = 3;
+              break;
+            case 7:
+              numStepsAboveStartOfOctave = 4;
+              break;
+            case 9:
+              numStepsAboveStartOfOctave = 5;
+              break;
+            case 10:
+              numStepsAboveStartOfOctave = 6;
+              break;
+          }
+          var numStepsAboveZero = numOctavesFromZero + numOctavesFromZero * numStepsPerOctave + numStepsAboveStartOfOctave;
+
+          return numStepsAboveZero;
+        };
+        // Draw a circle on the staff to represent the note to be played.
+        var noteXCenter = this.left + 20;
+        var noteRadius = heightOfNote / 2;
+        // 57 is highest note in treble cleff.
+        var numStepsAboveFloor = calcNumStepsAboveFloor(this.noteNum);
+        var numLinesToSubtract = Math.floor(numStepsAboveFloor / 2) + 1;
+        var noteYCenter = this.top + STAFF_HEIGHT - (numStepsAboveFloor * (heightOfNote / 2) + numLinesToSubtract * LINE_THICKNESS);
+
+        ctx.moveTo(noteXCenter + noteRadius, noteYCenter);
+        ctx.arc(noteXCenter, noteYCenter, noteRadius, 0, 2 * Math.PI);
+
+        /*      // Draw some text.
+              ctx.fillText(this.noteNum,
+                  this.left + (STAFF_WIDTH*.5),
+                  this.top+(STAFF_HEIGHT*.5));*/
 
         // Actually draw the lines.
         ctx.stroke();
@@ -149,6 +197,9 @@ noteTrainerModule.directive('noteTrainer', function () {
       this.staffs = [];
       for (var i = 0; i < NUM_STAFFS_PER_LINE; i++) {
         var noteNum = Math.round(Math.random() * (maxNote - minNote) + minNote);
+        while (util.isKeyNumFlatOrSharp(noteNum)) {
+          noteNum = Math.round(Math.random() * (maxNote - minNote) + minNote);
+        }
         this.staffs.push(new Staff(top, i * STAFF_WIDTH, noteNum, this.ctx));
       }
     }
@@ -203,10 +254,12 @@ noteTrainerModule.directive('noteTrainer', function () {
   }();
 
   var NoteTrainerController = function () {
-    function NoteTrainerController($scope, noteDetectorService) {
+    function NoteTrainerController($scope, noteDetectorService, utilService) {
       var _this = this;
 
       _classCallCheck(this, NoteTrainerController);
+
+      util = utilService;
 
       // Listen for when the user toggles play/pause.
       $scope.$watch(function () {
